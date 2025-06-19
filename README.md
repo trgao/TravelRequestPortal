@@ -1,6 +1,7 @@
 # TravelRequestPortal
 
-POC Project: Corporate Travel Request Portal
+Proof of concept project: corporate travel request portal
+Employees can submit and view their travel requests, while admins can approve and reject the requests of the employees and also add any remarks. A company can have multiple admin accounts managing their employees. 
 
 ## Prerequisites
 
