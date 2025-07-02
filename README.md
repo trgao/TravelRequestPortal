@@ -18,7 +18,7 @@ Create the postgresql database from `./backend/src/database/db.sql` script
 psql -f ./backend/src/database/db.sql
 ```
 
-# Node.js setup
+## Node.js setup
 
 Clone the project
 
@@ -40,7 +40,7 @@ node app.js
 
 Backend is available at http://localhost:3000
 
-# Vue.js setup
+## Vue.js setup
 
 Clone the project
 
