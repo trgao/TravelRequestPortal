@@ -32,6 +32,21 @@ func UpdateLastLoginAt(userId uint) (err error) {
 	return result.Error
 }
 
+func CreateEmployee(email string, firstName string, lastName string, passwordHash string, isAdmin bool, companyId uint) (user models.User, err error) {
+	user = models.User{
+		Email:        email,
+		FirstName:    firstName,
+		LastName:     lastName,
+		PasswordHash: passwordHash,
+		IsAdmin:      isAdmin,
+		LastLoginAt:  time.Now(),
+		CompanyID:    companyId,
+	}
+
+	result := db.MasterConn.Create(&user)
+	return user, result.Error
+}
+
 func CreateAdmin(email string, firstName string, lastName string, passwordHash string, companyId uint, tx *gorm.DB) (user models.User, err error) {
 	user = models.User{
 		Email:        email,
@@ -48,20 +63,5 @@ func CreateAdmin(email string, firstName string, lastName string, passwordHash s
 		tx.Rollback()
 	}
 
-	return user, result.Error
-}
-
-func CreateEmployee(email string, firstName string, lastName string, passwordHash string, isAdmin bool, companyId uint) (user models.User, err error) {
-	user = models.User{
-		Email:        email,
-		FirstName:    firstName,
-		LastName:     lastName,
-		PasswordHash: passwordHash,
-		IsAdmin:      isAdmin,
-		LastLoginAt:  time.Now(),
-		CompanyID:    companyId,
-	}
-
-	result := db.MasterConn.Create(&user)
 	return user, result.Error
 }

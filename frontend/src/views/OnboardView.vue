@@ -57,9 +57,9 @@
             </label>
           </div>
           <div class="flex gap-2">
-            <input type="radio" v-model="user.is_admin" value="true" />
+            <input type="radio" v-model="user.is_admin" :value="true" />
             <label for="admin">Admin</label>
-            <input type="radio" v-model="user.is_admin" value="false" />
+            <input type="radio" v-model="user.is_admin" :value="false" />
             <label for="employee">Employee</label>
           </div>
         </div>

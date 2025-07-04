@@ -38,6 +38,31 @@ func GetRejected(userId uint) (rejected int64, err error) {
 	return rejected, result.Error
 }
 
+func GetRequestsForEmployee(userId uint, limit int64, page int64) (requests []models.Request, err error) {
+	requests = make([]models.Request, 0)
+	queryString := "SELECT * FROM requests WHERE user_id = @id ORDER BY id"
+	queryString += fmt.Sprintf(" LIMIT %d", max(1, limit))
+	queryString += fmt.Sprintf(" OFFSET %d", max(0, (page-1)*limit))
+
+	result := db.MasterConn.Raw(
+		queryString,
+		sql.Named("id", userId),
+	).Scan(&requests)
+
+	return requests, result.Error
+}
+
+func GetRequestsCountForEmployee(userId uint) (count int64, err error) {
+	queryString := "SELECT COUNT(*) FROM requests WHERE user_id = @id"
+
+	result := db.MasterConn.Raw(
+		queryString,
+		sql.Named("id", userId),
+	).Scan(&count)
+
+	return count, result.Error
+}
+
 func GetRequestsForAdmin(userId uint, employee string, limit int64, page int64) (requests []FullRequest, err error) {
 	requests = make([]FullRequest, 0)
 	queryString := "SELECT requests.id, start_location, destination, date_time, purpose, status, admin_remarks, first_name, last_name FROM requests INNER JOIN users ON user_id = users.id WHERE company_id = (SELECT company_id FROM users WHERE id = @id)"
@@ -64,31 +89,6 @@ func GetRequestsCountForAdmin(userId uint, employee string) (count int64, err er
 	if employee != "" {
 		queryString += fmt.Sprintf(" AND (first_name || ' ' || last_name ILIKE '%%%s%%' OR first_name || ' ' || last_name ILIKE '%%%s%%')", employee, employee)
 	}
-
-	result := db.MasterConn.Raw(
-		queryString,
-		sql.Named("id", userId),
-	).Scan(&count)
-
-	return count, result.Error
-}
-
-func GetRequestsForEmployee(userId uint, limit int64, page int64) (requests []models.Request, err error) {
-	requests = make([]models.Request, 0)
-	queryString := "SELECT * FROM requests WHERE user_id = @id ORDER BY id"
-	queryString += fmt.Sprintf(" LIMIT %d", max(1, limit))
-	queryString += fmt.Sprintf(" OFFSET %d", max(0, (page-1)*limit))
-
-	result := db.MasterConn.Raw(
-		queryString,
-		sql.Named("id", userId),
-	).Scan(&requests)
-
-	return requests, result.Error
-}
-
-func GetRequestsCountForEmployee(userId uint) (count int64, err error) {
-	queryString := "SELECT COUNT(*) FROM requests WHERE user_id = @id"
 
 	result := db.MasterConn.Raw(
 		queryString,

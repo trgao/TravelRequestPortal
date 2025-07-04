@@ -27,6 +27,10 @@ func Request(c *gin.Context) {
 
 	if err := c.BindJSON(&body); err != nil {
 		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Request body is not of correct format",
+		})
+		return
 	}
 
 	userId, ok := c.Get("UserID")

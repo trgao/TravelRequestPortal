@@ -25,6 +25,10 @@ func Login(c *gin.Context) {
 
 	if err := c.BindJSON(&request); err != nil {
 		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Request body is not of correct format",
+		})
+		return
 	}
 
 	user, err := dao.FindUserByEmail(request.User.Email)
