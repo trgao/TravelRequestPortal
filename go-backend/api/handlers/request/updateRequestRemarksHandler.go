@@ -11,7 +11,7 @@ import (
 )
 
 type UpdateRequestRemarksBody struct {
-	Remarks string `json:"remarks"`
+	Remarks string `json:"remarks" validate:"required"`
 }
 
 func UpdateRequestRemarks(c *gin.Context) {
@@ -19,7 +19,7 @@ func UpdateRequestRemarks(c *gin.Context) {
 
 	if err := c.BindJSON(&request); err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Request body is not of correct format",
 		})
 		return
@@ -28,7 +28,9 @@ func UpdateRequestRemarks(c *gin.Context) {
 	requestId, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request id format",
+		})
 		return
 	}
 

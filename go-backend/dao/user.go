@@ -58,10 +58,7 @@ func CreateAdmin(email string, firstName string, lastName string, passwordHash s
 		CompanyID:    companyId,
 	}
 
-	result := db.MasterConn.Create(&user)
-	if result.Error != nil {
-		tx.Rollback()
-	}
+	result := tx.Create(&user)
 
 	return user, result.Error
 }

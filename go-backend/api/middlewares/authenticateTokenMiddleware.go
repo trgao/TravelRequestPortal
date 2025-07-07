@@ -7,9 +7,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 
 	"go-backend/api/accessToken"
+	"go-backend/config"
 	"go-backend/dao"
 )
 
@@ -21,7 +22,7 @@ func AuthenticateTokenMiddleware() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "There is no access token",
 			})
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.Abort()
 			return
 		}
 
@@ -31,7 +32,7 @@ func AuthenticateTokenMiddleware() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "Invalid access token",
 			})
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.Abort()
 			return
 		}
 
@@ -41,15 +42,15 @@ func AuthenticateTokenMiddleware() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "Invalid access token",
 			})
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.Abort()
 			return
 		}
 
-		if float64(time.Now().Unix()) > claims["iat"].(float64)+86400 {
+		if float64(time.Now().Unix()) > claims["exp"].(float64) {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "Access token expired",
 			})
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.Abort()
 			return
 		}
 
@@ -59,16 +60,16 @@ func AuthenticateTokenMiddleware() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": "Something went wrong",
 			})
-			c.AbortWithStatus(http.StatusInternalServerError)
+			c.Abort()
 			return
 		}
 
 		if float64(lastLoginAt.Unix()) > claims["iat"].(float64) {
-			c.SetCookie("token", "", 86400, "/", "localhost", false, true)
+			c.SetCookie("token", "", 86400, "/", config.Host, false, true)
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "Access token expired",
 			})
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.Abort()
 			return
 		}
 

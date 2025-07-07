@@ -2,11 +2,13 @@ package middlewares
 
 import (
 	"github.com/gin-gonic/gin"
+
+	"go-backend/config"
 )
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "http://localhost:5173")
+		c.Header("Access-Control-Allow-Origin", config.CORSOrigin)
 		c.Header("Access-Control-Allow-Credentials", "true")
 		c.Header(
 			"Access-Control-Allow-Headers",

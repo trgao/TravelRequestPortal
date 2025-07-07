@@ -5,10 +5,11 @@ import (
 
 	"net/http"
 
-	"github.com/absagar/go-bcrypt"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 
 	"go-backend/api/accessToken"
+	"go-backend/config"
 	"go-backend/dao"
 	"go-backend/db"
 )
@@ -30,13 +31,13 @@ func Register(c *gin.Context) {
 
 	if err := c.BindJSON(&request); err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Request body is not of correct format",
 		})
 		return
 	}
 
-	passwordHash, err := bcrypt.Hash(request.User.Password)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(request.User.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -48,7 +49,7 @@ func Register(c *gin.Context) {
 	user, findErr := dao.FindUserByEmail(request.User.Email)
 	if findErr == nil {
 		log.Println(findErr)
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.JSON(http.StatusConflict, gin.H{
 			"error": "User already exists",
 		})
 		return
@@ -57,7 +58,7 @@ func Register(c *gin.Context) {
 	tx := db.MasterConn.Begin()
 	defer tx.Rollback()
 
-	company, findErr := dao.FindCompanyByName(request.User.Company)
+	company, findErr := dao.FindCompanyByName(request.User.Company, tx)
 	if findErr == nil {
 		log.Println(findErr)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -66,7 +67,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	company, err = dao.CreateCompany(request.User.Company)
+	company, err = dao.CreateCompany(request.User.Company, tx)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -75,7 +76,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	user, err = dao.CreateAdmin(request.User.Email, request.User.FirstName, request.User.LastName, passwordHash, company.ID, tx)
+	user, err = dao.CreateAdmin(request.User.Email, request.User.FirstName, request.User.LastName, string(passwordHash), company.ID, tx)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -95,7 +96,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("token", token, 86400, "/", "localhost", false, true)
+	c.SetCookie("token", token, 86400, "/", config.Host, false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "Successfully registered a new account",
 		"is_admin": true,

@@ -4,8 +4,9 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func AuthoriseUserMiddleware() gin.HandlerFunc {
@@ -16,16 +17,27 @@ func AuthoriseUserMiddleware() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": "Something went wrong",
 			})
-			c.AbortWithStatus(http.StatusInternalServerError)
+			c.Abort()
+			return
 		}
 
-		userId, ok := c.Get("UserID")
-		if !ok || int64(userId.(float64)) != queryId {
+		userIdValue, ok := c.Get("UserID")
+		if !ok {
 			log.Println("Unable to get user id")
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "User does not have permission to view requests",
 			})
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.Abort()
+			return
+		}
+
+		userId, ok := userIdValue.(float64)
+		if !ok || int64(userId) != queryId {
+			log.Println("Invalid user id")
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "User does not have permission to view requests",
+			})
+			c.Abort()
 			return
 		}
 

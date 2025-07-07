@@ -16,8 +16,8 @@ func Admin(c *gin.Context) {
 	userId, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Something went wrong",
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid user id format",
 		})
 		return
 	}
@@ -26,8 +26,8 @@ func Admin(c *gin.Context) {
 	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 64)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Something went wrong",
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid limit format",
 		})
 		return
 	}
@@ -35,8 +35,8 @@ func Admin(c *gin.Context) {
 	page, err := strconv.ParseInt(c.DefaultQuery("page", "1"), 10, 64)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Something went wrong",
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid page format",
 		})
 		return
 	}

@@ -68,7 +68,7 @@ func GetRequestsForAdmin(userId uint, employee string, limit int64, page int64) 
 	queryString := "SELECT requests.id, start_location, destination, date_time, purpose, status, admin_remarks, first_name, last_name FROM requests INNER JOIN users ON user_id = users.id WHERE company_id = (SELECT company_id FROM users WHERE id = @id)"
 
 	if employee != "" {
-		queryString += fmt.Sprintf(" AND (first_name || ' ' || last_name ILIKE '%%%s%%' OR first_name || ' ' || last_name ILIKE '%%%s%%')", employee, employee)
+		queryString += " AND (first_name || ' ' || last_name ILIKE @employee OR first_name || ' ' || last_name ILIKE @employee)"
 	}
 
 	queryString += " ORDER BY requests.id"
@@ -78,6 +78,7 @@ func GetRequestsForAdmin(userId uint, employee string, limit int64, page int64) 
 	result := db.MasterConn.Raw(
 		queryString,
 		sql.Named("id", userId),
+		sql.Named("employee", "%"+employee+"%"),
 	).Scan(&requests)
 
 	return requests, result.Error
@@ -87,12 +88,13 @@ func GetRequestsCountForAdmin(userId uint, employee string) (count int64, err er
 	queryString := "SELECT COUNT(*) FROM requests INNER JOIN users ON user_id = users.id WHERE company_id = (SELECT company_id FROM users WHERE id = @id)"
 
 	if employee != "" {
-		queryString += fmt.Sprintf(" AND (first_name || ' ' || last_name ILIKE '%%%s%%' OR first_name || ' ' || last_name ILIKE '%%%s%%')", employee, employee)
+		queryString += " AND (first_name || ' ' || last_name ILIKE @employee OR first_name || ' ' || last_name ILIKE @employee)"
 	}
 
 	result := db.MasterConn.Raw(
 		queryString,
 		sql.Named("id", userId),
+		sql.Named("employee", "%"+employee+"%"),
 	).Scan(&count)
 
 	return count, result.Error

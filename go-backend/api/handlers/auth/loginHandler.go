@@ -3,11 +3,13 @@ package auth
 import (
 	"log"
 
-	"github.com/absagar/go-bcrypt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
+
 	"go-backend/api/accessToken"
+	"go-backend/config"
 	"go-backend/dao"
 )
 
@@ -25,17 +27,26 @@ func Login(c *gin.Context) {
 
 	if err := c.BindJSON(&request); err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Request body is not of correct format",
 		})
 		return
 	}
 
 	user, err := dao.FindUserByEmail(request.User.Email)
-	if err != nil || !bcrypt.Match(request.User.Password, user.PasswordHash) {
+	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Password is not correct",
+			"error": "Invalid credentials",
+		})
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(request.User.Password))
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Invalid credentials",
 		})
 		return
 	}
@@ -58,7 +69,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("token", token, 86400, "/", "localhost", false, true)
+	c.SetCookie("token", token, 86400, "/", config.Host, false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "Successfully logged in",
 		"is_admin": user.IsAdmin,

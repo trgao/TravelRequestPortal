@@ -1,20 +1,21 @@
 package dao
 
 import (
-	"go-backend/db"
 	"go-backend/models"
+
+	"gorm.io/gorm"
 )
 
-func FindCompanyByName(name string) (company models.Company, err error) {
-	result := db.MasterConn.Where("name = ?", name).First(&company)
+func FindCompanyByName(name string, tx *gorm.DB) (company models.Company, err error) {
+	result := tx.Where("name = ?", name).First(&company)
 	return company, result.Error
 }
 
-func CreateCompany(name string) (company models.Company, err error) {
-	company = models.Company {
+func CreateCompany(name string, tx *gorm.DB) (company models.Company, err error) {
+	company = models.Company{
 		Name: name,
 	}
 
-	result := db.MasterConn.Create(&company)
+	result := tx.Create(&company)
 	return company, result.Error
 }

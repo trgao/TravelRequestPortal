@@ -12,7 +12,7 @@ import (
 )
 
 type UpdateRequestStatusBody struct {
-	Status string `json:"status"`
+	Status string `json:"status" binding:"required,oneof=pending approved rejected"`
 }
 
 func UpdateRequestStatus(c *gin.Context) {
@@ -20,7 +20,7 @@ func UpdateRequestStatus(c *gin.Context) {
 
 	if err := c.BindJSON(&request); err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Request body is not of correct format",
 		})
 		return
@@ -29,8 +29,8 @@ func UpdateRequestStatus(c *gin.Context) {
 	requestId, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Something went wrong",
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request id format",
 		})
 		return
 	}

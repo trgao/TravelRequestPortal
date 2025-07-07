@@ -10,16 +10,25 @@ import (
 )
 
 func Summary(c *gin.Context) {
-	userId, ok := c.Get("UserID")
+	userIdValue, ok := c.Get("UserID")
 	if !ok {
 		log.Println("Unable to get user id")
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Something went wrong",
+			"error": "User id not found",
 		})
 		return
 	}
 
-	pending, err := dao.GetPending(uint(userId.(float64)))
+	userId, ok := userIdValue.(float64)
+	if !ok {
+		log.Println("Invalid user id type")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Invalid user id format",
+		})
+		return
+	}
+
+	pending, err := dao.GetPending(uint(userId))
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -28,7 +37,7 @@ func Summary(c *gin.Context) {
 		return
 	}
 
-	approved, err := dao.GetApproved(uint(userId.(float64)))
+	approved, err := dao.GetApproved(uint(userId))
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -37,7 +46,7 @@ func Summary(c *gin.Context) {
 		return
 	}
 
-	rejected, err := dao.GetRejected(uint(userId.(float64)))
+	rejected, err := dao.GetRejected(uint(userId))
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
